@@ -116,6 +116,7 @@ def users():
 @app.route('/tweet', methods=['DELETE'])
 def delete_tweet():
     payload = request.json
+    user_id = int(payload['id'])
     tweet_text = payload['tweet']
 
     if user_id not in app.users:

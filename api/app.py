@@ -99,3 +99,16 @@ def user(user_id):
 
     return jsonify(app.users[user_id])
 
+@app.route('/users',methods=['GET'])
+def users():
+    users_list = []
+
+    for user in app.users.values():
+        user_without_password = {
+            key : value
+            for key, value in user.items()
+            if key != 'password'
+        }
+        users_list.append(user_without_password)
+    
+    return jsonify(users_list)

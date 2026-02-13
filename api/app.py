@@ -1,9 +1,20 @@
 from flask import Flask, request,jsonify
+from flask.json.provider import DefaultJSONProvider
+import json
+
+class CustomJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+
+        return super().default(obj)
 
 app = (Flask)(__name__)
 app.users = {}
 app.id_count = 1 
 app.tweets = []
+app.json_provider_class = CustomJSONProvider
+app.json = CustomJSONProvider(app)
 
 @app.route("/ping", methods=['GET'])
 def ping():
@@ -39,16 +50,31 @@ def tweet():
 
     return '', 200
 
-@app.route('/follow',methods=['POST'])
+@app.route('/follow', methods=['POST'])
 def follow():
     payload = request.json
-    user_id = int[payload['id']]
-    user_id_to_follow = int[payload['follow']]
+    user_id = int(payload['id'])
+    user_id_to_follow = int(payload['follow'])
 
     if user_id not in app.users or user_id_to_follow not in app.users:
-        return '사용자가 존재하지 않습니다.',400
-    
+        return '사용자가 존재하지 않습니다.', 400
+        
     user = app.users[user_id]
-    user.setdefault('follow',set()).add(user_id_to_follow) #키가 존재하지 않으면 디폴트값을 지정하고, 만일 키가 이미 존재하면 해당 값을 읽어들이는 기능
+    user.setdefault('follow', set()).add(user_id_to_follow) #키가 존재하지 않으면 디폴트값을 저장하고, 만일 키가 이미 존재하면 해당 값을 읽어들이는 기능 
 
     return jsonify(user)
+
+@app.route('/unfollow', methods=['POST'])
+def unfollow():
+    payload = request.json
+    user_id = int(payload['id'])
+    user_id_to_follow = int(payload['follow'])
+
+    if user_id not in app.users or user_id_to_follow not in app.users:
+        return '사용자가 존재하지 않습니다.', 400
+        
+    user = app.users[user_id]
+    user.setdefault('follow', set()).discard(user_id_to_follow) #키가 존재하지 않으면 디폴트값을 저장하고, 만일 키가 이미 존재하면 해당 값을 읽어들이는 기능 
+
+    return jsonify(user)
+

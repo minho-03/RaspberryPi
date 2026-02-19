@@ -157,4 +157,13 @@ def create_app(test_config=None):
            'timeline' : get_timeline(user_id)
        })
 
+   @app.route('/user/<int:user_id>', methods=['GET'])
+   def get_user_info(user_id):
+       user = get_user(user_id)
+
+       if user is None:
+           return '사용자가 존재하지 않습니다.', 404
+
+       return jsonify(user)
+
    return app
